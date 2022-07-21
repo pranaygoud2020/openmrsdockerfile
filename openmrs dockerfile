@@ -1,0 +1,12 @@
+FROM maven:3.8-jdk-11 as dev
+RUN git clone https://github.com/Rajanikanthraju/openmrs-core.git
+CMD mvn install
+WORKDIR /app
+CMD ["mvn", "jetty:run", "-o"]
+FROM tomcat:8.5-jdk8-adoptopenjdk-hotspot
+RUN apt-get update && apt-get install -y zip \
+    && apt-get clean  \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/local/tomcat/webapps/*
+COPY --from=dev /app/webapp/target/openmrs.war /openmrs/distribution/openmrs_core/openmrs.war
+EXPOSE 8080
+CMD ["/usr/local/tomcat/startup.sh"]
